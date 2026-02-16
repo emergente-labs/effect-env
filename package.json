@@ -24,6 +24,7 @@
     }
   },
   "scripts": {
+    "prepare": "pnpm build",
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest",
