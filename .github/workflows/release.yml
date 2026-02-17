@@ -22,14 +22,20 @@ jobs:
         id: version
         run: |
           NEW=$(node -p "require('./package.json').version")
-          OLD=$(git show HEAD~1:package.json 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).version" 2>/dev/null || echo "")
-          if [ "$NEW" != "$OLD" ]; then
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "changed=true" >> "$GITHUB_OUTPUT"
             echo "version=$NEW" >> "$GITHUB_OUTPUT"
-            echo "Version changed: $OLD -> $NEW"
+            echo "Manual dispatch, publishing $NEW"
           else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-            echo "Version unchanged ($NEW), skipping publish"
+            OLD=$(git show HEAD~1:package.json 2>/dev/null | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).version" 2>/dev/null || echo "")
+            if [ "$NEW" != "$OLD" ]; then
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              echo "version=$NEW" >> "$GITHUB_OUTPUT"
+              echo "Version changed: $OLD -> $NEW"
+            else
+              echo "changed=false" >> "$GITHUB_OUTPUT"
+              echo "Version unchanged ($NEW), skipping publish"
+            fi
           fi
 
       - uses: pnpm/action-setup@v4
